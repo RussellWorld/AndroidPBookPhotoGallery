@@ -36,7 +36,10 @@ class FlickrFetchr {
                 Log.e(TAG, "Failed to fetch photos", t)
             }
 
-            override fun onResponse(call: Call<FlickrResponse>, response: Response<FlickrResponse>) {
+            override fun onResponse(
+                call: Call<FlickrResponse>,
+                response: Response<FlickrResponse>
+            ) {
                 Log.d(TAG, "Response received")
                 val flickrResponse: FlickrResponse? = response.body()
                 val photoResponse: PhotoResponse? = flickrResponse?.photos
