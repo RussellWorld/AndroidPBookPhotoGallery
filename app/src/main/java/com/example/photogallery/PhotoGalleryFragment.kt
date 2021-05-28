@@ -5,10 +5,10 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import android.widget.ImageView
+import android.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -29,6 +29,7 @@ class PhotoGalleryFragment : Fragment() {
             ViewModelProviders.of(this).get(PhotoGalleryViewModel::class.java)
 
         retainInstance = true
+        setHasOptionsMenu(true)
 
         val responseHandler = Handler()
         thumbnailDownloader = ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
@@ -109,6 +110,42 @@ class PhotoGalleryFragment : Fragment() {
             holder.bindDrawable(placeholder)
 
             thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_photo_gallery, menu)
+
+        val searchItem: MenuItem = menu.findItem(R.id.menu_item_search)
+        val searchView = searchItem.actionView as SearchView
+
+        searchView.apply {
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    Log.d(TAG, "QueryTextSubmit: $query")
+                    photoGalleryViewModel.fethPhotos(query)
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    Log.d(TAG, "QueryChangeText $newText")
+                    return false
+                }
+            })
+            setOnSearchClickListener {
+                searchView.setQuery(photoGalleryViewModel.searchTerm, false)
+            }
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_item_clear -> {
+                photoGalleryViewModel.fethPhotos("")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }
